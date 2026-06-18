@@ -139,7 +139,7 @@ import * as THREE from 'three';
       return v*0.5 + 0.5;
     }
 
-    // ridged filaments: ridge() = 1-abs(fbm*2-1), softened with pow ~2.2
+    // ridged filaments: ridge() = 1-abs(fbm*2-1), softened with pow ~2.8
     float ridge(float n){ n = 1.0 - abs(n*2.0 - 1.0); return pow(n, 2.8); }
 
     vec3 hsv2rgb(vec3 c){
@@ -284,6 +284,36 @@ import * as THREE from 'three';
 
   document.getElementById('hideBtn').addEventListener('click', ()=> hud.classList.add('hide'));
   document.getElementById('peek').addEventListener('click', ()=> hud.classList.remove('hide'));
+
+  // =======================================================================
+  // JARVIS bridge — connects to orb_bridge.py and drives window.orb from
+  // real JARVIS state instead of the prototype HUD controls above
+  // =======================================================================
+  (function connectBridge(){
+    function connect(){
+      const ws = new WebSocket('ws://localhost:8765');
+      ws.addEventListener('message', (ev) => {
+        let msg;
+        try { msg = JSON.parse(ev.data); } catch { return; }
+        if(msg.type === 'energy'){
+          liveMode = false;
+          eBtns.forEach(b=>b.classList.remove('on'));
+          window.orb.setEnergy(msg.value);
+          slider.value = (+msg.value).toFixed(2);
+        } else if(msg.type === 'agent'){
+          window.orb.setAgent(msg.agent);
+          agentsEl.querySelectorAll('button').forEach(b=>{
+            b.classList.toggle('on', b.title.toLowerCase() === String(msg.agent).toLowerCase());
+          });
+        } else if(msg.type === 'hue'){
+          window.orb.setHueSat(msg.h, msg.s);
+        }
+      });
+      ws.addEventListener('close', () => setTimeout(connect, 1500));
+      ws.addEventListener('error', () => ws.close());
+    }
+    connect();
+  })();
 })();
 </script>
 </body>
