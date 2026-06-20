@@ -10,7 +10,7 @@
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
   body{font-family:'Share Tech Mono',monospace}
-  .hud{background:#050d14;border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:10px;width:800px;height:600px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  .hud{background:#050d14;border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:10px;width:100vw;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden}
   .hud-top{display:flex;gap:8px;align-items:center;border-bottom:1px solid rgba(0,229,255,0.13);padding-bottom:8px;flex-shrink:0}
   .hud-title{color:#00e5ff;font-size:12px;letter-spacing:3px;flex:1}
   .hud-stat{font-size:10px;color:rgba(0,229,255,0.4);letter-spacing:1px;white-space:nowrap}
@@ -23,6 +23,14 @@
   .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
   .main{gap:6px}
   .chat-bar{display:flex;gap:6px;align-items:center;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.27);border-radius:5px;padding:5px 9px;flex-shrink:0}
+  .mode-btn{background:transparent;border:1px solid rgba(0,229,255,0.4);border-radius:3px;color:#00e5ff;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 8px;cursor:pointer;flex-shrink:0;transition:all 0.15s;white-space:nowrap}
+  .mode-btn.chat-active{border-color:rgba(255,170,0,0.4);color:#ffaa00}
+  .chat-history{max-height:150px;overflow-y:auto;overflow-x:hidden;font-size:11px;color:#00e5ff;flex-shrink:0;display:flex;flex-direction:column;gap:4px;padding:4px 2px;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 18px);mask-image:linear-gradient(to bottom,transparent 0,#000 18px)}
+  .chat-history::-webkit-scrollbar{width:2px}
+  .chat-history::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px}
+  .chat-bubble{letter-spacing:0.5px;word-break:break-word}
+  .chat-bubble.you{color:rgba(0,229,255,0.55)}
+  .chat-bubble.jarvis{color:#00e5ff}
   .chat-prompt{color:#00e5ff;font-size:11px;letter-spacing:1px;flex-shrink:0}
   .chat-input{flex:1;background:transparent;border:none;outline:none;color:#00e5ff;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:2px 0}
   .chat-input::placeholder{color:rgba(0,229,255,0.3)}
@@ -161,6 +169,7 @@
         </div>
       </div>
       <div class="chat-bar">
+        <button class="mode-btn" id="modeBtn" onclick="toggleMode()">CMD</button>
         <span class="chat-prompt">&gt;</span>
         <input type="text" class="chat-input" id="chatInput" placeholder="type a command..." />
         <button class="chat-send" onclick="sendChat()">SEND</button>
@@ -273,13 +282,58 @@
   }
 
   let ws_global = null;
+
+  // CMD/CHAT mode toggle
+  let chatMode = 'cmd';
+  function toggleMode(){
+    chatMode = (chatMode === 'cmd') ? 'chat' : 'cmd';
+    const btn = document.getElementById('modeBtn');
+    btn.textContent = chatMode.toUpperCase();
+    btn.className = 'mode-btn' + (chatMode === 'chat' ? ' chat-active' : '');
+  }
+
+  // chat history panel — created lazily above the chat bar on first use
+  let chatHistoryItems = [];
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function getChatHistoryEl(){
+    let el = document.getElementById('chatHistory');
+    if(!el){
+      el = document.createElement('div');
+      el.className = 'chat-history';
+      el.id = 'chatHistory';
+      const chatBar = document.querySelector('.chat-bar');
+      chatBar.parentNode.insertBefore(el, chatBar);
+    }
+    return el;
+  }
+  function appendChatBubble(role, text){
+    chatHistoryItems.push({role, text});
+    if(chatHistoryItems.length > 20){ chatHistoryItems = chatHistoryItems.slice(-20); } // last 10 exchanges
+    const el = getChatHistoryEl();
+    el.innerHTML = chatHistoryItems.map(item =>
+      '<div class="chat-bubble ' + item.role + '">' +
+        (item.role === 'you' ? 'YOU: ' : 'JARVIS: ') + escapeHtml(item.text) +
+      '</div>'
+    ).join('');
+    el.scrollTop = el.scrollHeight;
+  }
+
   function sendChat(){
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if(!text) return;
-    document.getElementById('lastCmd').textContent = '> "' + text + '"';
-    if(ws_global && ws_global.readyState === 1){
-      ws_global.send(JSON.stringify({type:'text_command', value:text}));
+    if(chatMode === 'chat'){
+      appendChatBubble('you', text);
+      if(ws_global && ws_global.readyState === 1){
+        ws_global.send(JSON.stringify({type:'chat_message', value:text}));
+      }
+    } else {
+      document.getElementById('lastCmd').textContent = '> "' + text + '"';
+      if(ws_global && ws_global.readyState === 1){
+        ws_global.send(JSON.stringify({type:'text_command', value:text}));
+      }
     }
     input.value = '';
   }
@@ -314,6 +368,8 @@
           stateLabel.textContent = s.label;
         } else if(msg.type === 'cmd'){
           document.getElementById('lastCmd').textContent = '> "' + msg.value + '"';
+        } else if(msg.type === 'chat_response'){
+          appendChatBubble('jarvis', msg.value);
         } else if(msg.type === 'mute'){
           if(!muted){ toggleMute(); }
         } else if(msg.type === 'unmute'){
