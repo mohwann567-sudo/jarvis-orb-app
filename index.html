@@ -10,7 +10,7 @@
   *{margin:0;padding:0;box-sizing:border-box}
   html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
   body{font-family:'Share Tech Mono',monospace}
-  .hud{background:#050d14;border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:10px;width:100vw;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+  .hud{background:#050d14;border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:10px;font-family:'Share Tech Mono',monospace;width:100vw;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden}
   .hud-top{display:flex;gap:8px;align-items:center;border-bottom:1px solid rgba(0,229,255,0.13);padding-bottom:8px;flex-shrink:0}
   .hud-title{color:#00e5ff;font-size:12px;letter-spacing:3px;flex:1}
   .hud-stat{font-size:10px;color:rgba(0,229,255,0.4);letter-spacing:1px;white-space:nowrap}
@@ -82,7 +82,7 @@
 </style>
 </head>
 <body>
-<div data-tauri-drag-region style="width:100vw;height:100vh;position:fixed;top:0;left:0;display:flex;align-items:center;justify-content:center;">
+<div data-tauri-drag-region style="width:100vw;height:100vh;position:fixed;top:0;left:0;">
 
 <div class="hud" id="hud">
   <!-- TOP BAR -->
@@ -90,7 +90,19 @@
     <div class="hud-title" data-tauri-drag-region>J.A.R.V.I.S // COMMAND INTERFACE v3.0</div>
     <div class="hud-stat" data-tauri-drag-region>UPTIME<span id="uptime">00:00:00</span></div>
     <div class="hud-stat" data-tauri-drag-region>MEM<span>87%</span></div>
-    <div class="hud-stat" data-tauri-drag-region>AGENTS<span>5</span></div>
+    <div class="hud-stat" data-tauri-drag-region>AGENTS<span>4</span></div>
+    <button class="mute-btn" id="pinBtn" onclick="togglePin()" style="border-color:rgba(0,229,255,0.4);color:#00e5ff">
+      <div class="mic-dot" style="background:#00e5ff"></div>
+      <span id="pinLabel">PIN OFF</span>
+    </button>
+    <button class="mute-btn" id="frameBtn" onclick="toggleFrame()" style="border-color:rgba(0,229,255,0.4);color:#00e5ff">
+      <div class="mic-dot" style="background:#00e5ff"></div>
+      <span id="frameLabel">FRAME ON</span>
+    </button>
+    <button class="mute-btn" id="voiceBtn" onclick="toggleVoice()" style="border-color:rgba(0,229,255,0.4);color:#00e5ff">
+      <div class="mic-dot" style="background:#00e5ff" id="voiceDot"></div>
+      <span id="voiceLabel">VOICE ON</span>
+    </button>
     <button class="mute-btn" id="muteBtn" onclick="toggleMute()">
       <div class="mic-dot" id="micDot"></div>
       <span id="muteLabel">MIC ON</span>
@@ -151,9 +163,8 @@
             <div class="tk-row"><div class="tk-agent" style="color:rgba(255,107,53,0.67)">ETSY</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:52%;background:#ff6b35"></div></div><div class="tk-val" style="color:rgba(255,107,53,0.67)">148K</div><div class="tk-cost">$0.22</div></div>
             <div class="tk-row"><div class="tk-agent" style="color:rgba(255,170,0,0.67)">UGC BOT</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:38%;background:#ffaa00"></div></div><div class="tk-val" style="color:rgba(255,170,0,0.67)">108K</div><div class="tk-cost">$0.16</div></div>
             <div class="tk-row"><div class="tk-agent" style="color:rgba(204,136,255,0.67)">FUNERAL</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:22%;background:#cc88ff"></div></div><div class="tk-val" style="color:rgba(204,136,255,0.67)">62K</div><div class="tk-cost">$0.09</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(0,255,136,0.67)">TRADER</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:18%;background:#00ff88"></div></div><div class="tk-val" style="color:rgba(0,255,136,0.67)">51K</div><div class="tk-cost">$0.08</div></div>
             <div class="tk-row"><div class="tk-agent" style="color:rgba(255,221,68,0.67)">G-WORD</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:14%;background:#ffdd44"></div></div><div class="tk-val" style="color:rgba(255,221,68,0.67)">39K</div><div class="tk-cost">$0.06</div></div>
-            <div class="tk-total"><div class="tk-total-label">TOTAL MONTHLY COST</div><div class="tk-total-val">$1.04</div></div>
+            <div class="tk-total"><div class="tk-total-label">TOTAL MONTHLY COST</div><div class="tk-total-val">$0.96</div></div>
           </div>
 
           <!-- REVENUE TRACKER -->
@@ -162,9 +173,8 @@
             <div class="tk-row"><div class="tk-agent" style="color:rgba(255,170,0,0.67)">UGC BOT</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:100%;background:#ffaa00"></div></div><div class="tk-val" style="color:rgba(255,170,0,0.67)">$680</div><div class="tk-cost">+12%</div></div>
             <div class="tk-row"><div class="tk-agent" style="color:rgba(255,107,53,0.67)">ETSY</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:58%;background:#ff6b35"></div></div><div class="tk-val" style="color:rgba(255,107,53,0.67)">$394</div><div class="tk-cost">+8%</div></div>
             <div class="tk-row"><div class="tk-agent" style="color:rgba(255,221,68,0.67)">G-WORD</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:22%;background:#ffdd44"></div></div><div class="tk-val" style="color:rgba(255,221,68,0.67)">$148</div><div class="tk-cost">+31%</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(0,255,136,0.67)">TRADER</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:18%;background:#00ff88"></div></div><div class="tk-val" style="color:rgba(0,255,136,0.67)">$124</div><div class="tk-cost">paper</div></div>
             <div class="tk-row"><div class="tk-agent" style="color:rgba(204,136,255,0.67)">FUNERAL</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:10%;background:#cc88ff"></div></div><div class="tk-val" style="color:rgba(204,136,255,0.67)">$70</div><div class="tk-cost">+5%</div></div>
-            <div class="tk-total"><div class="tk-total-label">TOTAL MONTHLY REVENUE</div><div class="tk-total-val" style="color:#00e5ff">$1,416</div></div>
+            <div class="tk-total"><div class="tk-total-label">TOTAL MONTHLY REVENUE</div><div class="tk-total-val" style="color:#00e5ff">$1,292</div></div>
           </div>
         </div>
       </div>
@@ -205,15 +215,6 @@
         <div class="bl"><span style="color:rgba(255,221,68,0.4)">ENGAGE</span><span style="color:#ffdd44">8.2%</span></div>
         <div class="bt"><div class="bf" style="width:82%;background:#ffdd44"></div></div>
       </div>
-      <!-- TRADER -->
-      <div class="sp" style="background:rgba(0,255,136,0.03);border:1px solid rgba(0,255,136,0.25)">
-        <div class="corner corner-tl" style="border-color:#00ff88"></div><div class="corner corner-tr" style="border-color:#00ff88"></div><div class="corner corner-bl" style="border-color:#00ff88"></div><div class="corner corner-br" style="border-color:#00ff88"></div>
-        <div class="ph"><div class="pdot" style="background:#00ff88;box-shadow:0 0 4px #00ff88"></div><div class="pname" style="color:#00ff88;font-size:9px">TRADER</div><div class="pbadge" style="background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.19);font-size:7px">PAPER</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(0,255,136,0.4)">WIN RATE</div><div class="smv" style="color:#00ff88">63%</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(0,255,136,0.4)">P&amp;L TODAY</div><div class="smv" style="color:#00ff88">+$124</div></div>
-        <div class="bl"><span style="color:rgba(0,255,136,0.4)">EVAL</span><span style="color:#00ff88">41%</span></div>
-        <div class="bt"><div class="bf" style="width:41%;background:#00ff88"></div></div>
-      </div>
       <!-- FUNERAL -->
       <div class="sp" style="background:rgba(204,136,255,0.03);border:1px solid rgba(204,136,255,0.25)">
         <div class="corner corner-tl" style="border-color:#cc88ff"></div><div class="corner corner-tr" style="border-color:#cc88ff"></div><div class="corner corner-bl" style="border-color:#cc88ff"></div><div class="corner corner-br" style="border-color:#cc88ff"></div>
@@ -230,6 +231,7 @@
 </div>
 <script>
   let muted = false;
+  let voiceOn = true;
   let startTime = Date.now();
 
   // uptime clock
@@ -259,6 +261,73 @@
     });
   }
   setInterval(animateBars, 110);
+
+  let pinned = false;
+  let framed = true;
+
+  async function togglePin(){
+    pinned = !pinned;
+    try {
+      await window.__TAURI__.window.getCurrentWindow().setAlwaysOnTop(pinned);
+    } catch(e){ console.error('setAlwaysOnTop failed', e); }
+    const btn = document.getElementById('pinBtn');
+    const label = document.getElementById('pinLabel');
+    const dot = btn.querySelector('.mic-dot');
+    if(pinned){
+      btn.style.borderColor = 'rgba(0,255,136,0.4)';
+      btn.style.color = '#00ff88';
+      dot.style.background = '#00ff88';
+      label.textContent = 'PIN ON';
+    } else {
+      btn.style.borderColor = 'rgba(0,229,255,0.4)';
+      btn.style.color = '#00e5ff';
+      dot.style.background = '#00e5ff';
+      label.textContent = 'PIN OFF';
+    }
+  }
+
+  async function toggleFrame(){
+    framed = !framed;
+    try {
+      await window.__TAURI__.window.getCurrentWindow().setDecorations(framed);
+    } catch(e){ console.error('setDecorations failed', e); }
+    const btn = document.getElementById('frameBtn');
+    const label = document.getElementById('frameLabel');
+    const dot = btn.querySelector('.mic-dot');
+    if(framed){
+      btn.style.borderColor = 'rgba(0,229,255,0.4)';
+      btn.style.color = '#00e5ff';
+      dot.style.background = '#00e5ff';
+      label.textContent = 'FRAME ON';
+    } else {
+      btn.style.borderColor = 'rgba(255,170,0,0.4)';
+      btn.style.color = '#ffaa00';
+      dot.style.background = '#ffaa00';
+      label.textContent = 'FRAME OFF';
+    }
+  }
+
+  // voice toggle
+  function toggleVoice(){
+    voiceOn = !voiceOn;
+    const btn = document.getElementById('voiceBtn');
+    const dot = document.getElementById('voiceDot');
+    const label = document.getElementById('voiceLabel');
+    if(voiceOn){
+      btn.style.borderColor = 'rgba(0,229,255,0.4)';
+      btn.style.color = '#00e5ff';
+      dot.style.background = '#00e5ff';
+      label.textContent = 'VOICE ON';
+    } else {
+      btn.style.borderColor = 'rgba(255,170,0,0.4)';
+      btn.style.color = '#ffaa00';
+      dot.style.background = '#ffaa00';
+      label.textContent = 'VOICE OFF';
+    }
+    if(ws_global && ws_global.readyState === 1){
+      ws_global.send(JSON.stringify({type:'voice_toggle', enabled:voiceOn}));
+    }
+  }
 
   // mute toggle
   function toggleMute(){
@@ -380,6 +449,21 @@
       ws.addEventListener('error', () => ws.close());
     }
     connect();
+  })();
+
+  // Shutdown JARVIS Python backend when the HUD window is closed
+  (async function wireCloseHandler(){
+    try {
+      const { getCurrentWindow } = window.__TAURI__.window;
+      await getCurrentWindow().onCloseRequested(async (event) => {
+        event.preventDefault();
+        if(ws_global && ws_global.readyState === 1){
+          ws_global.send(JSON.stringify({type:'shutdown'}));
+        }
+        await new Promise(r => setTimeout(r, 300));
+        await getCurrentWindow().destroy();
+      });
+    } catch(e){ console.error('close handler failed', e); }
   })();
 </script>
 </body>
