@@ -361,21 +361,6 @@
     }
     connect();
   })();
-
-  // Shutdown JarvisOS Python backend when the HUD window is closed
-  (async function wireCloseHandler(){
-    try {
-      const { getCurrentWindow } = window.__TAURI__.window;
-      await getCurrentWindow().onCloseRequested(async (event) => {
-        event.preventDefault();
-        if(ws_global && ws_global.readyState === 1){
-          ws_global.send(JSON.stringify({type:'shutdown'}));
-        }
-        await new Promise(r => setTimeout(r, 300));
-        await getCurrentWindow().destroy();
-      });
-    } catch(e){ console.error('close handler failed', e); }
-  })();
 </script>
 </body>
 </html>
