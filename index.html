@@ -5,362 +5,419 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>JarvisOS</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-  :root{ --bg:transparent; }
+  :root{
+    --bg:#03142e; --card:#0A2147; --border:#1C3A6E; --text:#FFFFFF; --muted:#A9B8D6;
+    --raise:#123060; --field:#051A3A; --line-strong:#3A5FA3;
+    --etsy:#E8A44A; --ugc:#5B9BF5; --chars:#A48BF0;
+    --ok:#4FB286;
+    --sans:"Inter","Segoe UI",system-ui,sans-serif;
+    --mono:"JetBrains Mono",Consolas,monospace;
+  }
   *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
-  body{font-family:'Share Tech Mono',monospace}
-  .hud{background:#050d14;border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:10px;font-family:'Share Tech Mono',monospace;width:100vw;height:100vh;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;overflow:hidden}
-  .hud-top{display:flex;gap:8px;align-items:center;border-bottom:1px solid rgba(0,229,255,0.13);padding-bottom:8px;flex-shrink:0}
-  .hud-title{color:#00e5ff;font-size:12px;letter-spacing:3px;flex:1}
-  .hud-stat{font-size:10px;color:rgba(0,229,255,0.4);letter-spacing:1px;white-space:nowrap}
-  .hud-stat span{color:#00ff88;margin-left:4px}
-  .toggle-btn{background:transparent;border:1px solid rgba(0,255,136,0.4);border-radius:3px;color:#00ff88;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 8px;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;transition:all 0.15s}
-  .btn-dot{width:6px;height:6px;border-radius:50%;background:#00ff88;flex-shrink:0;transition:background 0.15s}
-  .body{display:flex;gap:8px;flex:1;overflow:hidden;min-height:0}
-  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-  .main{gap:6px}
-  .chat-bar{display:flex;gap:6px;align-items:center;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.27);border-radius:5px;padding:5px 9px;flex-shrink:0}
-  .mode-btn{background:transparent;border:1px solid rgba(0,229,255,0.4);border-radius:3px;color:#00e5ff;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 8px;cursor:pointer;flex-shrink:0;transition:all 0.15s;white-space:nowrap}
-  .mode-btn.chat-active{border-color:rgba(255,170,0,0.4);color:#ffaa00}
-  .chat-history{max-height:150px;overflow-y:auto;overflow-x:hidden;font-size:11px;color:#00e5ff;flex-shrink:0;display:flex;flex-direction:column;gap:4px;padding:4px 2px;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 18px);mask-image:linear-gradient(to bottom,transparent 0,#000 18px)}
-  .chat-history::-webkit-scrollbar{width:2px}
-  .chat-history::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px}
-  .chat-bubble{letter-spacing:0.5px;word-break:break-word}
-  .chat-bubble.you{color:rgba(0,229,255,0.55)}
-  .chat-bubble.jarvis{color:#00e5ff}
-  .chat-prompt{color:#00e5ff;font-size:11px;letter-spacing:1px;flex-shrink:0}
-  .chat-input{flex:1;background:transparent;border:none;outline:none;color:#00e5ff;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:2px 0}
-  .chat-input::placeholder{color:rgba(0,229,255,0.3)}
-  .chat-send{background:transparent;border:1px solid rgba(0,229,255,0.3);border-radius:3px;color:#00e5ff;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:2px;padding:3px 10px;cursor:pointer;flex-shrink:0}
-  .chat-send:hover{background:rgba(0,229,255,0.1)}
-  .main-panel{flex:1;border-radius:5px;padding:9px;position:relative;overflow:hidden;box-sizing:border-box;background:rgba(0,229,255,0.035);border:1px solid rgba(0,229,255,0.27);display:flex;flex-direction:column}
-  .main-inner{flex:1;overflow-y:auto;overflow-x:hidden;padding-right:2px}
-  .main-inner::-webkit-scrollbar{width:2px}
-  .main-inner::-webkit-scrollbar-thumb{background:rgba(0,229,255,0.2);border-radius:2px}
-  .sidebar{width:165px;display:flex;flex-direction:column;gap:5px;overflow:hidden;flex-shrink:0}
-  .sp{border-radius:5px;padding:9px;position:relative;overflow:hidden;box-sizing:border-box;flex:1;cursor:pointer;transition:border-color 0.2s}
-  .sp:hover{filter:brightness(1.15)}
-  .corner{position:absolute;width:7px;height:7px}
-  .corner-tl{top:0;left:0;border-top:1px solid;border-left:1px solid}
-  .corner-tr{top:0;right:0;border-top:1px solid;border-right:1px solid}
-  .corner-bl{bottom:0;left:0;border-bottom:1px solid;border-left:1px solid}
-  .corner-br{bottom:0;right:0;border-bottom:1px solid;border-right:1px solid}
-  .ph{display:flex;align-items:center;gap:6px;margin-bottom:7px}
-  .pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-  .pname{font-size:10px;letter-spacing:2px}
-  .pbadge{margin-left:auto;font-size:8px;padding:1px 5px;border-radius:2px;letter-spacing:1px;white-space:nowrap}
-  .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px}
-  .metric{background:rgba(255,255,255,0.03);border-radius:3px;padding:5px 6px}
-  .ml{font-size:8px;letter-spacing:1px;margin-bottom:2px}
-  .mv{font-size:15px}
-  .ms{font-size:8px;margin-top:1px}
-  .bl{font-size:8px;letter-spacing:1px;display:flex;justify-content:space-between;margin-bottom:3px}
-  .bt{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;margin-bottom:5px}
-  .bf{height:100%;border-radius:2px}
-  .cmd{background:rgba(255,255,255,0.04);border-radius:3px;padding:4px 7px;font-size:9px;letter-spacing:1px;margin-top:3px;margin-bottom:5px}
-  .scan{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,0.2),transparent);animation:scan 4s linear infinite;pointer-events:none}
-  @keyframes scan{0%{top:0;opacity:0}5%{opacity:1}95%{opacity:1}100%{top:100%;opacity:0}}
-  .tracker-section{margin-top:5px}
-  .tracker-title{font-size:8px;letter-spacing:2px;color:rgba(0,229,255,0.4);margin-bottom:5px;border-top:1px solid rgba(0,229,255,0.1);padding-top:5px}
-  .tk-row{display:flex;align-items:center;gap:5px;margin-bottom:4px}
-  .tk-agent{font-size:8px;letter-spacing:1px;width:60px;flex-shrink:0}
-  .tk-bar-wrap{flex:1;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
-  .tk-bar{height:100%;border-radius:2px}
-  .tk-val{font-size:8px;width:34px;text-align:right;flex-shrink:0}
-  .tk-cost{font-size:8px;width:30px;text-align:right;flex-shrink:0;color:rgba(0,255,136,0.6)}
-  .tk-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:5px;padding-top:4px;border-top:1px solid rgba(0,229,255,0.1)}
-  .tk-total-label{font-size:8px;letter-spacing:2px;color:rgba(0,229,255,0.4)}
-  .tk-total-val{font-size:12px;color:#00ff88}
-  .sp-metric{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
-  .sml{font-size:8px;letter-spacing:1px}
-  .smv{font-size:11px}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.4}
+  button{font-family:inherit;font-size:inherit;color:inherit;background:none;border:none;cursor:pointer;text-align:left}
+  .mono{font-family:var(--mono)}
+  .muted{color:var(--muted)}
+
+  .app{display:flex;flex-direction:column;gap:12px;height:100vh;padding:12px}
+
+  /* header */
+  .header{display:flex;align-items:center;gap:12px;flex-shrink:0;min-height:32px}
+  .brand{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
+  .brand svg{width:22px;height:22px;display:block}
+  .chips{display:flex;gap:6px}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--border);border-radius:999px;font-size:11px;color:var(--muted);white-space:nowrap}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+  .chip.ok{color:var(--text)} .chip.ok .dot{background:var(--ok)}
+  .spacer{flex:1}
+  .ctl{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--muted)}
+  .ctl:hover{background:var(--card);color:var(--text)}
+  .ctl.on{color:var(--text);border-color:var(--line-strong)}
+
+  /* cards */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px}
+
+  /* KPI row */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;flex-shrink:0}
+  .kpi{padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+  .kpi .label{font-size:11px;color:var(--muted)}
+  .kpi .value{font-family:var(--mono);font-size:20px;line-height:1.3;margin-top:2px}
+  .kpi .src{font-size:10px;color:var(--muted);min-height:14px}
+  .kpi svg.spark{width:100%;height:22px;margin-top:4px;display:block}
+
+  /* body: left column (KPIs + agents) and right sidebar (console) */
+  .body{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;flex:1;min-height:0}
+  .left{display:flex;flex-direction:column;gap:12px;min-width:0;min-height:0}
+  .main{display:grid;grid-template-columns:260px 1fr;gap:12px;flex:1;min-height:0}
+  .agents{padding:8px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+  .section-title{font-size:11px;color:var(--muted);padding:4px 8px 6px}
+  .row{display:flex;align-items:center;gap:10px;width:100%;padding:8px;border-radius:6px;border-left:2px solid transparent}
+  .row:hover{background:var(--raise)}
+  .row.sel{background:var(--raise);border-left-color:var(--accent,var(--muted))}
+  .row .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+  .row .name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .status{font-size:11px;color:var(--muted)}
+  .row.branch{padding-left:30px}
+  .row.branch .dot{width:6px;height:6px}
+
+  .detail{padding:16px;overflow-y:auto;min-width:0}
+  .crumbs{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-bottom:10px}
+  .crumbs button{color:var(--muted);padding:0}
+  .crumbs button:hover{color:var(--text);text-decoration:underline}
+  .dhead{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .dhead .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .dhead h2{font-size:16px;font-weight:600}
+  .pill{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-size:11px;color:var(--muted);border:1px solid var(--border);border-top:1px solid var(--border);box-shadow:inset 0 -2px 0 0 var(--accent)}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+  .tile{background:var(--field);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+  .tile .label{font-size:11px;color:var(--muted)}
+  .tile .value{font-family:var(--mono);font-size:18px;margin-top:2px}
+  .tile .src{font-size:10px;color:var(--muted);margin-top:1px}
+  .empty{border:1px dashed var(--line-strong);border-radius:8px;padding:16px;color:var(--muted);font-size:12px}
+  .blist{display:flex;flex-direction:column;gap:6px}
+  .brow{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--field)}
+  .brow:hover{background:var(--raise)}
+  .brow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .brow .name{flex:1}
+  .brow .chev{color:var(--muted)}
+  .stages{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+
+  /* console */
+  .console{padding:12px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .console-head{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--muted)}
+  .console-head .title{font-size:13px;font-weight:600;color:var(--text)}
+  .console-head .last{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--mono);min-height:15px}
+  .log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;font-size:12px;padding:2px 2px 2px 0}
+  .log:empty::before{content:"No messages yet.";color:var(--muted)}
+  .line{word-break:break-word;display:flex;flex-direction:column;gap:2px}
+  .line .who{color:var(--muted);font-size:11px}
+  .line.jarvis .who{color:var(--text)}
+  .inputrow{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:4px 4px 4px 8px;background:var(--field);flex-shrink:0}
+  .inputrow:focus-within{border-color:var(--line-strong)}
+  .mode{padding:3px 8px;border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--muted);flex-shrink:0}
+  .mode:hover{color:var(--text)}
+  .chat-input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 0}
+  .chat-input::placeholder{color:var(--muted)}
+  .send{padding:4px 12px;border:1px solid var(--border);border-radius:6px;font-size:11px;flex-shrink:0}
+  .send:hover{background:var(--raise)}
+
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+  @media (max-width:900px){ .body{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) 240px} }
+  @media (max-width:640px){ .main{grid-template-columns:1fr} .agents{max-height:150px} .stages{grid-template-columns:repeat(2,minmax(0,1fr))} }
 </style>
 </head>
 <body>
-<div data-tauri-drag-region style="width:100vw;height:100vh;position:fixed;top:0;left:0;">
+<div class="app">
 
-<div class="hud" id="hud">
-  <!-- TOP BAR -->
-  <div class="hud-top" data-tauri-drag-region>
-    <div class="hud-title" data-tauri-drag-region>JarvisOS</div>
-    <div class="hud-stat" data-tauri-drag-region>UPTIME<span id="uptime">00:00:00</span></div>
-    <div class="hud-stat" data-tauri-drag-region>MEM<span>87%</span></div>
-    <div class="hud-stat" data-tauri-drag-region>AGENTS<span>4</span></div>
-    <button class="toggle-btn" id="pinBtn" onclick="togglePin()" style="border-color:rgba(0,229,255,0.4);color:#00e5ff">
-      <div class="btn-dot" style="background:#00e5ff"></div>
-      <span id="pinLabel">PIN OFF</span>
-    </button>
-    <button class="toggle-btn" id="frameBtn" onclick="toggleFrame()" style="border-color:rgba(0,229,255,0.4);color:#00e5ff">
-      <div class="btn-dot" style="background:#00e5ff"></div>
-      <span id="frameLabel">FRAME ON</span>
-    </button>
+  <!-- 1. Header bar -->
+  <div class="header" data-tauri-drag-region>
+    <div class="brand" data-tauri-drag-region>
+      <svg viewBox="0 0 1024 1024" fill="none" stroke="currentColor" stroke-width="64" aria-hidden="true">
+        <rect x="160" y="160" width="704" height="704" rx="160"/>
+        <path d="M470 330 H680 M575 330 V610 A105 105 0 0 1 365 610 V575" stroke-linecap="butt" stroke-linejoin="miter"/>
+      </svg>
+      <span data-tauri-drag-region>JarvisOS</span>
+    </div>
+    <div class="chips" data-tauri-drag-region>
+      <span class="chip" id="chipConn"><span class="dot"></span><span id="chipConnText">Core offline</span></span>
+      <span class="chip" id="chipState"><span class="dot"></span><span id="chipStateText">&mdash;</span></span>
+    </div>
+    <div class="spacer" data-tauri-drag-region></div>
+    <button class="ctl" id="pinBtn" onclick="togglePin()"><span id="pinLabel">Pin off</span></button>
+    <button class="ctl on" id="frameBtn" onclick="toggleFrame()"><span id="frameLabel">Frame on</span></button>
   </div>
 
   <div class="body">
-    <!-- MAIN PANEL -->
+  <div class="left">
+    <!-- 2. KPI row -->
+    <div class="kpis" id="kpis"></div>
+
+    <!-- 3. Agents + detail -->
     <div class="main">
-      <div class="main-panel">
-        <div class="scan"></div>
-        <div class="corner corner-tl" style="border-color:#00e5ff"></div>
-        <div class="corner corner-tr" style="border-color:#00e5ff"></div>
-        <div class="corner corner-bl" style="border-color:#00e5ff"></div>
-        <div class="corner corner-br" style="border-color:#00e5ff"></div>
-        <div class="ph">
-          <div class="pdot" style="background:#00e5ff;box-shadow:0 0 5px #00e5ff"></div>
-          <div class="pname" style="color:#00e5ff">JarvisOS CORE</div>
-          <div class="pbadge" id="statusBadge" style="background:rgba(0,229,255,0.06);color:rgba(0,229,255,0.4);border:1px solid rgba(0,229,255,0.15)">IDLE</div>
-        </div>
-        <div class="main-inner">
-          <div class="metric-grid">
-            <div class="metric">
-              <div class="ml" style="color:rgba(0,229,255,0.4)">COMMANDS TODAY</div>
-              <div class="mv" style="color:#00e5ff" id="cmdCount">47</div>
-              <div class="ms" style="color:rgba(0,229,255,0.27)">+12 from yesterday</div>
-            </div>
-            <div class="metric">
-              <div class="ml" style="color:rgba(0,229,255,0.4)">SKILLS FIRED</div>
-              <div class="mv" style="color:#00e5ff">23</div>
-              <div class="ms" style="color:rgba(0,229,255,0.27)">3 pending</div>
-            </div>
-            <div class="metric">
-              <div class="ml" style="color:rgba(0,229,255,0.4)">MEMORY HITS</div>
-              <div class="mv" style="color:#00e5ff">91%</div>
-              <div class="ms" style="color:rgba(0,229,255,0.27)">recall accuracy</div>
-            </div>
-            <div class="metric">
-              <div class="ml" style="color:rgba(0,229,255,0.4)">DAILY TASKS</div>
-              <div class="mv" style="color:#00e5ff">68%</div>
-              <div class="ms" style="color:rgba(0,229,255,0.27)">17/25 complete</div>
-            </div>
-          </div>
-
-          <div class="bl" style="margin-top:6px"><span style="color:rgba(0,229,255,0.4)">LAST COMMAND</span></div>
-          <div class="cmd" style="color:rgba(0,229,255,0.67)" id="lastCmd">&gt; "log revenue etsy 47 dollars from notebook sales"</div>
-
-          <div class="bl"><span style="color:rgba(0,229,255,0.4)">DAILY PROGRESS</span><span style="color:#00e5ff">68%</span></div>
-          <div class="bt"><div class="bf" style="width:68%;background:#00e5ff"></div></div>
-
-          <!-- TOKEN TRACKER -->
-          <div class="tracker-section">
-            <div class="tracker-title">MONTHLY TOKEN USAGE — JUNE 2026</div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(0,229,255,0.67)">CORE</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:100%;background:#00e5ff"></div></div><div class="tk-val" style="color:rgba(0,229,255,0.67)">284K</div><div class="tk-cost">$0.43</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(255,107,53,0.67)">ETSY</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:52%;background:#ff6b35"></div></div><div class="tk-val" style="color:rgba(255,107,53,0.67)">148K</div><div class="tk-cost">$0.22</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(255,170,0,0.67)">UGC BOT</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:38%;background:#ffaa00"></div></div><div class="tk-val" style="color:rgba(255,170,0,0.67)">108K</div><div class="tk-cost">$0.16</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(204,136,255,0.67)">FUNERAL</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:22%;background:#cc88ff"></div></div><div class="tk-val" style="color:rgba(204,136,255,0.67)">62K</div><div class="tk-cost">$0.09</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(255,221,68,0.67)">G-WORD</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:14%;background:#ffdd44"></div></div><div class="tk-val" style="color:rgba(255,221,68,0.67)">39K</div><div class="tk-cost">$0.06</div></div>
-            <div class="tk-total"><div class="tk-total-label">TOTAL MONTHLY COST</div><div class="tk-total-val">$0.96</div></div>
-          </div>
-
-          <!-- REVENUE TRACKER -->
-          <div class="tracker-section">
-            <div class="tracker-title">MONTHLY REVENUE — JUNE 2026</div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(255,170,0,0.67)">UGC BOT</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:100%;background:#ffaa00"></div></div><div class="tk-val" style="color:rgba(255,170,0,0.67)">$680</div><div class="tk-cost">+12%</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(255,107,53,0.67)">ETSY</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:58%;background:#ff6b35"></div></div><div class="tk-val" style="color:rgba(255,107,53,0.67)">$394</div><div class="tk-cost">+8%</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(255,221,68,0.67)">G-WORD</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:22%;background:#ffdd44"></div></div><div class="tk-val" style="color:rgba(255,221,68,0.67)">$148</div><div class="tk-cost">+31%</div></div>
-            <div class="tk-row"><div class="tk-agent" style="color:rgba(204,136,255,0.67)">FUNERAL</div><div class="tk-bar-wrap"><div class="tk-bar" style="width:10%;background:#cc88ff"></div></div><div class="tk-val" style="color:rgba(204,136,255,0.67)">$70</div><div class="tk-cost">+5%</div></div>
-            <div class="tk-total"><div class="tk-total-label">TOTAL MONTHLY REVENUE</div><div class="tk-total-val" style="color:#00e5ff">$1,292</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="chat-bar">
-        <button class="mode-btn" id="modeBtn" onclick="toggleMode()">CMD</button>
-        <span class="chat-prompt">&gt;</span>
-        <input type="text" class="chat-input" id="chatInput" placeholder="type a command..." />
-        <button class="chat-send" onclick="sendChat()">SEND</button>
-      </div>
-    </div>
-
-    <!-- SIDEBAR: ALL 5 AGENTS -->
-    <div class="sidebar">
-      <!-- ETSY -->
-      <div class="sp" style="background:rgba(255,107,53,0.03);border:1px solid rgba(255,107,53,0.25)">
-        <div class="corner corner-tl" style="border-color:#ff6b35"></div><div class="corner corner-tr" style="border-color:#ff6b35"></div><div class="corner corner-bl" style="border-color:#ff6b35"></div><div class="corner corner-br" style="border-color:#ff6b35"></div>
-        <div class="ph"><div class="pdot" style="background:#ff6b35;box-shadow:0 0 4px #ff6b35"></div><div class="pname" style="color:#ff6b35;font-size:9px">ETSY</div><div class="pbadge" style="background:rgba(255,107,53,0.1);color:#ff6b35;border:1px solid rgba(255,107,53,0.19);font-size:7px">MOMS</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(255,107,53,0.4)">REVENUE</div><div class="smv" style="color:#ff6b35">$394</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(255,107,53,0.4)">LISTINGS</div><div class="smv" style="color:#ff6b35">34</div></div>
-        <div class="bl"><span style="color:rgba(255,107,53,0.4)">SALES</span><span style="color:#ff6b35">3/10</span></div>
-        <div class="bt"><div class="bf" style="width:30%;background:#ff6b35"></div></div>
-      </div>
-      <!-- UGC -->
-      <div class="sp" style="background:rgba(255,170,0,0.03);border:1px solid rgba(255,170,0,0.25)">
-        <div class="corner corner-tl" style="border-color:#ffaa00"></div><div class="corner corner-tr" style="border-color:#ffaa00"></div><div class="corner corner-bl" style="border-color:#ffaa00"></div><div class="corner corner-br" style="border-color:#ffaa00"></div>
-        <div class="ph"><div class="pdot" style="background:#ffaa00;box-shadow:0 0 4px #ffaa00"></div><div class="pname" style="color:#ffaa00;font-size:9px">UGC BOT</div><div class="pbadge" style="background:rgba(255,170,0,0.1);color:#ffaa00;border:1px solid rgba(255,170,0,0.19);font-size:7px">3 BRIEFS</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(255,170,0,0.4)">MONTHLY</div><div class="smv" style="color:#ffaa00">$680</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(255,170,0,0.4)">VIDEOS</div><div class="smv" style="color:#ffaa00">7</div></div>
-        <div class="bl"><span style="color:rgba(255,170,0,0.4)">RETAINER</span><span style="color:#ffaa00">68%</span></div>
-        <div class="bt"><div class="bf" style="width:68%;background:#ffaa00"></div></div>
-      </div>
-      <!-- G-WORD -->
-      <div class="sp" style="background:rgba(255,221,68,0.03);border:1px solid rgba(255,221,68,0.25)">
-        <div class="corner corner-tl" style="border-color:#ffdd44"></div><div class="corner corner-tr" style="border-color:#ffdd44"></div><div class="corner corner-bl" style="border-color:#ffdd44"></div><div class="corner corner-br" style="border-color:#ffdd44"></div>
-        <div class="ph"><div class="pdot" style="background:#ffdd44;box-shadow:0 0 4px #ffdd44"></div><div class="pname" style="color:#ffdd44;font-size:9px">G-WORD</div><div class="pbadge" style="background:rgba(255,221,68,0.1);color:#ffdd44;border:1px solid rgba(255,221,68,0.19);font-size:7px">FB+TT</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(255,221,68,0.4)">REACH</div><div class="smv" style="color:#ffdd44">12.4K</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(255,221,68,0.4)">POSTS</div><div class="smv" style="color:#ffdd44">4 queued</div></div>
-        <div class="bl"><span style="color:rgba(255,221,68,0.4)">ENGAGE</span><span style="color:#ffdd44">8.2%</span></div>
-        <div class="bt"><div class="bf" style="width:82%;background:#ffdd44"></div></div>
-      </div>
-      <!-- FUNERAL -->
-      <div class="sp" style="background:rgba(204,136,255,0.03);border:1px solid rgba(204,136,255,0.25)">
-        <div class="corner corner-tl" style="border-color:#cc88ff"></div><div class="corner corner-tr" style="border-color:#cc88ff"></div><div class="corner corner-bl" style="border-color:#cc88ff"></div><div class="corner corner-br" style="border-color:#cc88ff"></div>
-        <div class="ph"><div class="pdot" style="background:#cc88ff;box-shadow:0 0 4px #cc88ff"></div><div class="pname" style="color:#cc88ff;font-size:9px">FUNERAL</div><div class="pbadge" style="background:rgba(204,136,255,0.1);color:#cc88ff;border:1px solid rgba(204,136,255,0.19);font-size:7px">PHL</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(204,136,255,0.4)">ACTIVE</div><div class="smv" style="color:#cc88ff">3 cases</div></div>
-        <div class="sp-metric"><div class="sml" style="color:rgba(204,136,255,0.4)">OBITS</div><div class="smv" style="color:#cc88ff">2 drafted</div></div>
-        <div class="bl"><span style="color:rgba(204,136,255,0.4)">FOLLOW-UPS</span><span style="color:#cc88ff">5 due</span></div>
-        <div class="bt"><div class="bf" style="width:55%;background:#cc88ff"></div></div>
-      </div>
+      <div class="card agents" id="agents"></div>
+      <div class="card detail" id="detail"></div>
     </div>
   </div>
-</div>
+
+  <!-- 4. Console: right sidebar -->
+  <div class="card console">
+    <div class="console-head">
+      <span class="title">Console</span>
+      <span class="last" id="lastCmd"></span>
+    </div>
+    <div class="log" id="chatHistory"></div>
+    <div class="inputrow">
+      <button class="mode" id="modeBtn" onclick="toggleMode()">CMD</button>
+      <input type="text" class="chat-input" id="chatInput" placeholder="Type a command" autocomplete="off" spellcheck="false" />
+      <button class="send" onclick="sendChat()">Send</button>
+    </div>
+  </div>
+  </div><!-- /body -->
 
 </div>
 <script>
-  let startTime = Date.now();
+  const DASH = '—';
 
-  // uptime clock
-  setInterval(() => {
-    const s = Math.floor((Date.now() - startTime) / 1000);
-    const h = String(Math.floor(s/3600)).padStart(2,'0');
-    const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
-    const sec = String(s%60).padStart(2,'0');
-    document.getElementById('uptime').textContent = h+':'+m+':'+sec;
-  }, 1000);
+  /* ---------- static structure (no metrics) ---------- */
+  const AGENTS = [
+    { id:'etsy',  name:'Etsy Agent',    color:'#E8A44A', branches:[{ id:'redrunswest', name:'RedRunsWest' }] },
+    { id:'ugc',   name:'UGC Bot',       color:'#5B9BF5', branches:[] },
+    { id:'chars', name:'AI Characters', color:'#A48BF0', branches:[] }
+  ];
+  const STAGES = ['Research', 'Designs', 'In review', 'Queued', 'Live'];
+  const NO_FEED = 'No feed from Core yet';
 
+  function el(tag, cls, text){
+    const e = document.createElement(tag);
+    if(cls) e.className = cls;
+    if(text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  /* ---------- header: window controls ---------- */
   let pinned = false;
   let framed = true;
-
   async function togglePin(){
     pinned = !pinned;
-    try {
-      await window.__TAURI__.window.getCurrentWindow().setAlwaysOnTop(pinned);
-    } catch(e){ console.error('setAlwaysOnTop failed', e); }
-    const btn = document.getElementById('pinBtn');
-    const label = document.getElementById('pinLabel');
-    const dot = btn.querySelector('.btn-dot');
-    if(pinned){
-      btn.style.borderColor = 'rgba(0,255,136,0.4)';
-      btn.style.color = '#00ff88';
-      dot.style.background = '#00ff88';
-      label.textContent = 'PIN ON';
-    } else {
-      btn.style.borderColor = 'rgba(0,229,255,0.4)';
-      btn.style.color = '#00e5ff';
-      dot.style.background = '#00e5ff';
-      label.textContent = 'PIN OFF';
-    }
+    try { await window.__TAURI__.window.getCurrentWindow().setAlwaysOnTop(pinned); }
+    catch(e){ console.error('setAlwaysOnTop failed', e); }
+    document.getElementById('pinLabel').textContent = pinned ? 'Pin on' : 'Pin off';
+    document.getElementById('pinBtn').classList.toggle('on', pinned);
   }
-
   async function toggleFrame(){
     framed = !framed;
-    try {
-      await window.__TAURI__.window.getCurrentWindow().setDecorations(framed);
-    } catch(e){ console.error('setDecorations failed', e); }
-    const btn = document.getElementById('frameBtn');
-    const label = document.getElementById('frameLabel');
-    const dot = btn.querySelector('.btn-dot');
-    if(framed){
-      btn.style.borderColor = 'rgba(0,229,255,0.4)';
-      btn.style.color = '#00e5ff';
-      dot.style.background = '#00e5ff';
-      label.textContent = 'FRAME ON';
+    try { await window.__TAURI__.window.getCurrentWindow().setDecorations(framed); }
+    catch(e){ console.error('setDecorations failed', e); }
+    document.getElementById('frameLabel').textContent = framed ? 'Frame on' : 'Frame off';
+    document.getElementById('frameBtn').classList.toggle('on', framed);
+  }
+
+  /* ---------- header: status chips (real socket + core state) ---------- */
+  let connected = false;
+  let coreState = null;   // 'idle' | 'thinking' | null (unknown)
+  function renderChips(){
+    const conn = document.getElementById('chipConn');
+    conn.classList.toggle('ok', connected);
+    document.getElementById('chipConnText').textContent = connected ? 'Core connected' : 'Core offline';
+    const st = document.getElementById('chipState');
+    st.classList.toggle('ok', connected && coreState === 'thinking');
+    let label = DASH;
+    if(connected){ label = (coreState === 'thinking') ? 'Thinking' : 'Idle'; }
+    document.getElementById('chipStateText').textContent = label;
+  }
+
+  /* ---------- KPI row: real values only ---------- */
+  const commandTimes = [];            // timestamps of commands sent from this HUD
+  const sessionStart = Date.now();
+  function sparkSvg(buckets){
+    const w = 100, h = 22, max = Math.max(1, ...buckets);
+    const pts = buckets.map((v, i) => (i * w / (buckets.length - 1)).toFixed(1) + ',' + (h - 2 - (v / max) * (h - 4)).toFixed(1)).join(' ');
+    return '<svg class="spark" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-hidden="true">' +
+           '<polyline points="' + pts + '" fill="none" stroke="#A9B8D6" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function emptySpark(){
+    return '<svg class="spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden="true">' +
+           '<line x1="0" y1="11" x2="100" y2="11" stroke="#2C4A8A" stroke-width="1" stroke-dasharray="3 3" vector-effect="non-scaling-stroke"/></svg>';
+  }
+  function renderKpis(){
+    const now = Date.now();
+    const buckets = new Array(20).fill(0);                    // commands per minute, last 20 minutes
+    commandTimes.forEach(t => { const age = Math.floor((now - t) / 60000); if(age >= 0 && age < 20){ buckets[19 - age]++; } });
+    const up = Math.floor((now - sessionStart) / 1000);
+    const uptime = [Math.floor(up / 3600), Math.floor((up % 3600) / 60), up % 60].map(n => String(n).padStart(2, '0')).join(':');
+    const tiles = [
+      { label:'Monthly token cost', value:DASH, src:'Source: core usage log (not on bridge)', spark:emptySpark() },
+      { label:'Monthly revenue',    value:DASH, src:'Source: revenue tracker (not on bridge)', spark:emptySpark() },
+      { label:'Commands this session', value:String(commandTimes.length), src:'Source: this HUD, ' + uptime, spark:sparkSvg(buckets) },
+      { label:'Skills fired',       value:DASH, src:'Source: core skill log (not on bridge)', spark:emptySpark() },
+      { label:'Daily tasks',        value:DASH, src:'Source: task list (not on bridge)', spark:emptySpark() }
+    ];
+    const host = document.getElementById('kpis');
+    host.innerHTML = '';
+    tiles.forEach(t => {
+      const c = el('div', 'card kpi');
+      c.appendChild(el('div', 'label', t.label));
+      c.appendChild(el('div', 'value', t.value));
+      c.appendChild(el('div', 'src', t.src));
+      const s = el('div'); s.innerHTML = t.spark; c.appendChild(s.firstChild);
+      host.appendChild(c);
+    });
+  }
+
+  /* ---------- agents list + detail ---------- */
+  const view = { agent:'etsy', branch:null };
+  function agentById(id){ return AGENTS.find(a => a.id === id); }
+
+  function renderAgents(){
+    const host = document.getElementById('agents');
+    host.innerHTML = '';
+    host.appendChild(el('div', 'section-title', 'Agents'));
+    AGENTS.forEach(a => {
+      const r = el('button', 'row' + (view.agent === a.id && !view.branch ? ' sel' : ''));
+      r.style.setProperty('--accent', a.color);
+      r.dataset.agent = a.id;
+      r.appendChild(el('span', 'dot'));
+      r.appendChild(el('span', 'name', a.name));
+      r.appendChild(el('span', 'status', 'No data'));
+      host.appendChild(r);
+      a.branches.forEach(b => {
+        const br = el('button', 'row branch' + (view.agent === a.id && view.branch === b.id ? ' sel' : ''));
+        br.style.setProperty('--accent', a.color);
+        br.dataset.agent = a.id; br.dataset.branch = b.id;
+        br.appendChild(el('span', 'dot'));
+        br.appendChild(el('span', 'name', b.name));
+        br.appendChild(el('span', 'status', 'No data'));
+        host.appendChild(br);
+      });
+    });
+  }
+
+  function tile(label, value, src){
+    const t = el('div', 'tile');
+    t.appendChild(el('div', 'label', label));
+    t.appendChild(el('div', 'value', value));
+    if(src){ t.appendChild(el('div', 'src', src)); }
+    return t;
+  }
+
+  function renderDetail(){
+    const host = document.getElementById('detail');
+    host.innerHTML = '';
+    const a = agentById(view.agent);
+    host.style.setProperty('--accent', a.color);
+
+    if(view.branch){
+      const b = a.branches.find(x => x.id === view.branch);
+      const crumbs = el('div', 'crumbs');
+      const back = el('button', '', a.name);
+      back.dataset.agent = a.id; back.dataset.back = '1';
+      crumbs.appendChild(back);
+      crumbs.appendChild(el('span', '', '/'));
+      crumbs.appendChild(el('span', '', b.name));
+      host.appendChild(crumbs);
+
+      const head = el('div', 'dhead');
+      head.appendChild(el('span', 'dot'));
+      head.appendChild(el('h2', '', b.name));
+      head.appendChild(el('span', 'pill', 'No data'));
+      host.appendChild(head);
+
+      host.appendChild(el('div', 'section-title', 'Pipeline'));
+      const stages = el('div', 'stages');
+      STAGES.forEach(s => stages.appendChild(tile(s, DASH, 'No feed')));
+      host.appendChild(stages);
+      return;
+    }
+
+    const head = el('div', 'dhead');
+    head.appendChild(el('span', 'dot'));
+    head.appendChild(el('h2', '', a.name));
+    head.appendChild(el('span', 'pill', 'No data'));
+    host.appendChild(head);
+
+    const tiles = el('div', 'tiles');
+    tiles.appendChild(tile('Branches', String(a.branches.length), 'Configured'));
+    tiles.appendChild(tile('Revenue', DASH, NO_FEED));
+    tiles.appendChild(tile('Last run', DASH, NO_FEED));
+    host.appendChild(tiles);
+
+    host.appendChild(el('div', 'section-title', 'Branches'));
+    if(a.branches.length === 0){
+      host.appendChild(el('div', 'empty', 'No branches yet. Branches (shops, clients, channels) appear here once this agent has them.'));
     } else {
-      btn.style.borderColor = 'rgba(255,170,0,0.4)';
-      btn.style.color = '#ffaa00';
-      dot.style.background = '#ffaa00';
-      label.textContent = 'FRAME OFF';
+      const list = el('div', 'blist');
+      a.branches.forEach(b => {
+        const r = el('button', 'brow');
+        r.dataset.agent = a.id; r.dataset.branch = b.id;
+        r.appendChild(el('span', 'dot'));
+        r.appendChild(el('span', 'name', b.name));
+        r.appendChild(el('span', 'status muted', 'No data'));
+        r.appendChild(el('span', 'chev', '›'));
+        list.appendChild(r);
+      });
+      host.appendChild(list);
     }
   }
 
-  let ws_global = null;
+  function select(agentId, branchId){
+    view.agent = agentId; view.branch = branchId || null;
+    renderAgents(); renderDetail();
+  }
+  document.addEventListener('click', (ev) => {
+    const t = ev.target.closest('[data-agent]');
+    if(!t) return;
+    if(t.dataset.back){ select(t.dataset.agent, null); return; }
+    select(t.dataset.agent, t.dataset.branch || null);
+  });
 
-  // CMD/CHAT mode toggle
+  /* ---------- console ---------- */
   let chatMode = 'cmd';
   function toggleMode(){
     chatMode = (chatMode === 'cmd') ? 'chat' : 'cmd';
-    const btn = document.getElementById('modeBtn');
-    btn.textContent = chatMode.toUpperCase();
-    btn.className = 'mode-btn' + (chatMode === 'chat' ? ' chat-active' : '');
+    document.getElementById('modeBtn').textContent = chatMode.toUpperCase();
   }
+  let chatItems = [];
+  function renderLog(){
+    const log = document.getElementById('chatHistory');
+    log.innerHTML = '';
+    chatItems.forEach(item => {
+      const l = el('div', 'line ' + item.role);
+      l.appendChild(el('span', 'who', item.role === 'you' ? 'You' : 'JarvisOS'));
+      l.appendChild(document.createTextNode(item.text));
+      log.appendChild(l);
+    });
+    log.scrollTop = log.scrollHeight;
+  }
+  function appendChat(role, text){
+    chatItems.push({ role, text });
+    if(chatItems.length > 40){ chatItems = chatItems.slice(-40); }
+    renderLog();
+  }
+  function setLast(text){ document.getElementById('lastCmd').textContent = text ? 'Last: ' + text : ''; }
 
-  // chat history panel — created lazily above the chat bar on first use
-  let chatHistoryItems = [];
-  function escapeHtml(s){
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function getChatHistoryEl(){
-    let el = document.getElementById('chatHistory');
-    if(!el){
-      el = document.createElement('div');
-      el.className = 'chat-history';
-      el.id = 'chatHistory';
-      const chatBar = document.querySelector('.chat-bar');
-      chatBar.parentNode.insertBefore(el, chatBar);
-    }
-    return el;
-  }
-  function appendChatBubble(role, text){
-    chatHistoryItems.push({role, text});
-    if(chatHistoryItems.length > 20){ chatHistoryItems = chatHistoryItems.slice(-20); } // last 10 exchanges
-    const el = getChatHistoryEl();
-    el.innerHTML = chatHistoryItems.map(item =>
-      '<div class="chat-bubble ' + item.role + '">' +
-        (item.role === 'you' ? 'YOU: ' : 'JarvisOS: ') + escapeHtml(item.text) +
-      '</div>'
-    ).join('');
-    el.scrollTop = el.scrollHeight;
-  }
-
+  let ws_global = null;
   function sendChat(){
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if(!text) return;
-    if(chatMode === 'chat'){
-      appendChatBubble('you', text);
-      if(ws_global && ws_global.readyState === 1){
-        ws_global.send(JSON.stringify({type:'chat_message', value:text}));
-      }
+    appendChat('you', text);
+    commandTimes.push(Date.now());
+    renderKpis();
+    if(ws_global && ws_global.readyState === 1){
+      ws_global.send(JSON.stringify({ type: chatMode === 'chat' ? 'chat_message' : 'text_command', value: text }));
     } else {
-      document.getElementById('lastCmd').textContent = '> "' + text + '"';
-      if(ws_global && ws_global.readyState === 1){
-        ws_global.send(JSON.stringify({type:'text_command', value:text}));
-      }
+      appendChat('jarvis', 'Core is not connected. Message not sent.');
     }
     input.value = '';
   }
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('chatInput').addEventListener('keydown', (e) => {
-      if(e.key === 'Enter'){ sendChat(); }
-    });
+    document.getElementById('chatInput').addEventListener('keydown', (e) => { if(e.key === 'Enter'){ sendChat(); } });
   });
 
-  // WebSocket bridge — drives HUD state from JarvisOS Python core
+  /* ---------- WebSocket bridge (protocol unchanged) ---------- */
   (function connectBridge(){
     function connect(){
       const ws = new WebSocket('ws://localhost:8765');
       ws_global = ws;
+      ws.addEventListener('open', () => { connected = true; renderChips(); });
       ws.addEventListener('message', (ev) => {
         let msg;
         try { msg = JSON.parse(ev.data); } catch { return; }
-        if(msg.type === 'state'){
-          const states = {
-            idle:     {label:'IDLE',     color:'rgba(0,229,255,0.4)', bg:'rgba(0,229,255,0.06)', border:'rgba(0,229,255,0.15)'},
-            thinking: {label:'THINKING', color:'#00e5ff',             bg:'rgba(0,229,255,0.09)', border:'rgba(0,229,255,0.2)'},
-          };
-          const s = states[msg.value] || states.idle;
-          const badge = document.getElementById('statusBadge');
-          badge.style.cssText = 'background:'+s.bg+';color:'+s.color+';border:1px solid '+s.border;
-          badge.textContent = s.label;
-        } else if(msg.type === 'cmd'){
-          document.getElementById('lastCmd').textContent = '> "' + msg.value + '"';
-        } else if(msg.type === 'chat_response'){
-          appendChatBubble('jarvis', msg.value);
-        }
+        if(msg.type === 'state'){ coreState = (msg.value === 'thinking') ? 'thinking' : 'idle'; renderChips(); }
+        else if(msg.type === 'cmd'){ setLast(msg.value); }
+        else if(msg.type === 'chat_response'){ appendChat('jarvis', msg.value); }
       });
-      ws.addEventListener('close', () => setTimeout(connect, 1500));
+      ws.addEventListener('close', () => { connected = false; coreState = null; renderChips(); setTimeout(connect, 1500); });
       ws.addEventListener('error', () => ws.close());
     }
     connect();
   })();
+
+  /* ---------- init ---------- */
+  renderChips(); renderKpis(); renderAgents(); renderDetail(); renderLog();
+  setInterval(renderKpis, 5000);
 </script>
 </body>
 </html>

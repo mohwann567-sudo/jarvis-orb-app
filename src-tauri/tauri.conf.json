@@ -15,8 +15,9 @@
       {
         "title": "JarvisOS",
         "label": "main",
-        "width": 820,
-        "height": 620,
+        "width": 1100,
+        "height": 660,
+        "center": true,
         "minWidth": 400,
         "minHeight": 300,
         "decorations": true,
